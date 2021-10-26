@@ -1,0 +1,17 @@
+{
+    "name": "rollover",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "pino": "^7.0.5",
+        "web3": "^1.6.0"
+    }
+}
