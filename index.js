@@ -76,6 +76,12 @@ async function start() {
 
             await waitTransaction(receipt.transactionHash)
 
+            const summitBalance = await summitContract.methods
+                .balanceOf(account.address)
+                .call()
+
+            logger.info(`Summit balance: ${summitBalance}`)
+
             await sleep(250000)
 
             await swapRewardsForFTM()
