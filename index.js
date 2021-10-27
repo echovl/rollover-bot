@@ -77,6 +77,8 @@ async function start() {
             await waitTransaction(receipt.transactionHash)
 
             await swapRewardsForFTM()
+
+            await sleep(250000)
         } catch (err) {
             logger.error(err.message)
         }
