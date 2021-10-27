@@ -74,10 +74,9 @@ async function start() {
             // Execute the rollover and claim the rewards
             const receipt = await claimRolloverRewards(position)
 
-            if (receipt.transactionHash) {
-                await sleep(250000)
-                await swapRewardsForFTM()
-            }
+            await waitTransaction(receipt.transactionHash)
+
+            await swapRewardsForFTM()
         } catch (err) {
             logger.error(err.message)
         }
@@ -148,6 +147,14 @@ async function swapRewardsForFTM() {
         })
 
     logger.info(`Swapped SUMMIT for FTM, tx hash: ${receipt.transactionHash}`)
+}
+
+async function waitTransaction(txHash, interval) {
+    while (true) {
+        const receipt = await web3.eth.getTransactionReceipt(txHash)
+        if (receipt != null) return receipt
+        await Promise.delay(interval ? interval : 500)
+    }
 }
 
 start()
