@@ -103,7 +103,7 @@ async function claimRolloverRewards(position) {
 
     const receipt = await rolloverContract.methods.rollover(position).send({
         from: account.address,
-        gasPrice,
+        gasPrice: (gasPrice * 1.05).toString(),
         gas: Math.round(gasAmount * 1.5),
     })
 
