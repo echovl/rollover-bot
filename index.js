@@ -4,11 +4,11 @@ import pino from "pino"
 
 const PROVIDER_URL = "https://rpc.ftm.tools/"
 const SUMMIT_CONTRACT_ADDRESS = "0x46d303b6829aDc7AC3217D92f71B1DbbE77eBBA2"
-const SUMMIT_CONTRACT_ABI = JSON.parse(readFileSync("./summit_abi.json"))
-const SUMMIT_TOKEN_ABI = JSON.parse(readFileSync("./summit_token_abi.json"))
+const SUMMIT_CONTRACT_ABI = JSON.parse(readFileSync("./abi/summit_abi.json"))
+const SUMMIT_TOKEN_ABI = JSON.parse(readFileSync("./abi/summit_token_abi.json"))
 const SUMMIT_TOKEN_ADDRESS = "0x8F9bCCB6Dd999148Da1808aC290F2274b13D7994"
 const SPOOKY_ROUTER_ADDRESS = "0xf491e7b69e4244ad4002bc14e878a34207e38c29"
-const SPOOKY_ROUTER_ABI = JSON.parse(readFileSync("./spooky_abi.json"))
+const SPOOKY_ROUTER_ABI = JSON.parse(readFileSync("./abi/spooky_abi.json"))
 const PRIVATE_KEY = process.env.PRIVATE_KEY
 
 const SUMMIT = "0x8f9bccb6dd999148da1808ac290f2274b13d7994"
@@ -16,6 +16,7 @@ const WFTM = "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83"
 
 const web3 = new Web3(PROVIDER_URL)
 const account = web3.eth.accounts.privateKeyToAccount(PRIVATE_KEY)
+const logger = pino(`rollover_${Date.now()}.log`)
 
 // Add our account to the wallet to be able to use contracts
 web3.eth.accounts.wallet.add(account)
@@ -43,7 +44,6 @@ async function start() {
     }
 
     const position = parseInt(process.argv[2])
-    const logger = pino(`rollover_${position}.log`)
 
     logger.info("Starting rollover bot")
 
