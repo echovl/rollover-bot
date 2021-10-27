@@ -76,11 +76,7 @@ async function start() {
 
             await waitTransaction(receipt.transactionHash)
 
-            logger.info(
-                await rolloverContract.methods
-                    .roundEndTimestamp(position)
-                    .call()
-            )
+            await sleep(250000)
 
             await swapRewardsForFTM()
 
