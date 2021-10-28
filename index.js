@@ -63,7 +63,7 @@ async function start() {
                 continue
             }
 
-            if (timestamp < roundEndTimestamp) continue
+            if (timestamp < roundEndTimestamp - 5) continue
 
             logger.info(
                 `Rollover ${position} available, machine timestamp: ${timestamp}, round timestamp: ${roundEndTimestamp}`
