@@ -16,6 +16,7 @@ const WFTM = "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83"
 
 const web3 = new Web3(PROVIDER_URL)
 const account = web3.eth.accounts.privateKeyToAccount(PRIVATE_KEY)
+const address = process.argv[3] || account.address
 const logger = pino(`rollover_${Date.now()}.log`)
 
 // Add our account to the wallet to be able to use contracts
@@ -45,7 +46,7 @@ async function start() {
 
     const position = parseInt(process.argv[2])
 
-    logger.info("Starting rollover bot")
+    logger.info(`Starting rollover bot for address ${address}`)
 
     while (true) {
         try {
@@ -75,7 +76,7 @@ async function start() {
             await waitTransaction(receipt.transactionHash)
 
             const summitBalance = await summitContract.methods
-                .balanceOf(account.address)
+                .balanceOf(address)
                 .call()
 
             logger.info(`Summit balance: ${summitBalance}`)
@@ -97,10 +98,10 @@ async function claimRolloverRewards(position) {
     // Estime gas required for rollover
     const gasAmount = await rolloverContract.methods
         .rollover(position)
-        .estimateGas({ from: account.address, gas: 10000000 })
+        .estimateGas({ from: address, gas: 10000000 })
 
     const receipt = await rolloverContract.methods.rollover(position).send({
-        from: account.address,
+        from: address,
         gasPrice: (gasPrice * 1.05).toString(),
         gas: Math.round(gasAmount * 1.5),
     })
@@ -117,9 +118,7 @@ async function swapRewardsForFTM() {
     const path = [SUMMIT, WFTM]
 
     // Get summit rewards balance
-    const summitBalance = await summitContract.methods
-        .balanceOf(account.address)
-        .call()
+    const summitBalance = await summitContract.methods.balanceOf(address).call()
 
     const [_, ftmAmount] = await routerContract.methods
         .getAmountsOut(summitBalance, path)
@@ -135,21 +134,21 @@ async function swapRewardsForFTM() {
             summitBalance,
             minFTMAmount,
             path,
-            account.address,
+            address,
             deadline
         )
-        .estimateGas({ from: account.address, gas: 10000000 })
+        .estimateGas({ from: address, gas: 10000000 })
 
     const receipt = await routerContract.methods
         .swapExactTokensForETH(
             summitBalance,
             minFTMAmount,
             path,
-            account.address,
+            address,
             deadline
         )
         .send({
-            from: account.address,
+            from: address,
             gasPrice,
             gas: Math.round(gasAmount * 1.5),
         })
