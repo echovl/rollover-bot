@@ -54,7 +54,6 @@ async function start() {
                 .roundEndTimestamp(position)
                 .call()
 
-            const block = await web3.eth.getBlock("latest")
             const timestamp = Date.now() / 1000
 
             // Sleep until 250 seconds before the rollover
@@ -66,10 +65,9 @@ async function start() {
 
             if (timestamp < roundEndTimestamp) continue
 
-            logger.info(`Rollover ${position} available`)
-            logger.info(`Block ${block.number}, Timestamp: ${block?.timestamp}`)
-            logger.info(`Machine timestamp: ${Date.now() / 1000}`)
-            logger.info(`RoundEndTimestamp: ${roundEndTimestamp}`)
+            logger.info(
+                `Rollover ${position} available, machine timestamp: ${timestamp}, round timestamp: ${roundEndTimestamp}`
+            )
 
             // Execute the rollover and claim the rewards
             const receipt = await claimRolloverRewards(position)
