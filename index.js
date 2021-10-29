@@ -16,7 +16,7 @@ const WFTM = "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83"
 
 const web3 = new Web3(PROVIDER_URL)
 const account = web3.eth.accounts.privateKeyToAccount(PRIVATE_KEY)
-const address = process.argv[3] || account.address
+const address = account.address
 const logger = pino(`rollover_${Date.now()}.log`)
 
 // Add our account to the wallet to be able to use contracts
