@@ -67,7 +67,7 @@ async function start() {
             if (timestamp < roundEndTimestamp - 5) continue
 
             logger.info(
-                `Rollover ${position} available, machine timestamp: ${timestamp}, round timestamp: ${roundEndTimestamp}`
+                `Rollover ${position} available, round timestamp: ${roundEndTimestamp}`
             )
 
             // Execute the rollover and claim the rewards
@@ -95,20 +95,39 @@ async function start() {
 async function claimRolloverRewards(position) {
     const gasPrice = await web3.eth.getGasPrice()
 
-    // Estime gas required for rollover
-    const gasAmount = await rolloverContract.methods
-        .rollover(position)
-        .estimateGas({ from: address, gas: 10000000 })
+    while (true) {
+        try {
+            logger.info(
+                `Trying to claim rewards, timestamp: ${Date.now() / 1000}`
+            )
 
-    const receipt = await rolloverContract.methods.rollover(position).send({
-        from: address,
-        gasPrice: (gasPrice * 1.05).toString(),
-        gas: Math.round(gasAmount * 1.5),
-    })
+            // Estime gas required for rollover
+            const gasAmount = await rolloverContract.methods
+                .rollover(position)
+                .estimateGas({ from: address, gas: 10000000 })
 
-    logger.info(`Claimed rollover rewards, tx hash: ${receipt.transactionHash}`)
+            const receipt = await rolloverContract.methods
+                .rollover(position)
+                .send({
+                    from: address,
+                    gasPrice: (gasPrice * 1.05).toString(),
+                    gas: Math.round(gasAmount * 1.5),
+                })
 
-    return receipt
+            logger.info(
+                `Claimed rollover rewards, tx hash: ${receipt.transactionHash}`
+            )
+
+            return receipt
+        } catch (err) {
+            logger.info(err.message)
+            if (
+                err.message.includes("Transaction has been reverted by the EVM")
+            ) {
+                break
+            }
+        }
+    }
 }
 
 async function swapRewardsForFTM() {
