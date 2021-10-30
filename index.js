@@ -122,13 +122,15 @@ async function rollover(position, timestamp) {
 
             return receipt
         } catch (err) {
-            logger.info(err.message)
+            const now = Date.now() / 1000
+            logger.info(err.message, now, timestamp)
             if (
                 err.message.includes("Transaction has been reverted by the EVM")
             ) {
                 throw new Error("Transaction reverted")
             }
-            if (Date.now() / 1000 > timestamp + 100) {
+
+            if (now > timestamp + 100) {
                 throw new Error("Timeout")
             }
         }
