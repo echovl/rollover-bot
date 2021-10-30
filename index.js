@@ -71,7 +71,7 @@ async function start() {
             )
 
             // Execute the rollover and claim the rewards
-            const receipt = await rollover(position)
+            const receipt = await rollover(position, roundEndTimestamp)
 
             await waitTransaction(receipt.transactionHash)
 
@@ -92,7 +92,7 @@ async function start() {
     }
 }
 
-async function rollover(position) {
+async function rollover(position, timestamp) {
     const gasPrice = await web3.eth.getGasPrice()
 
     logger.info(
@@ -127,6 +127,9 @@ async function rollover(position) {
                 err.message.includes("Transaction has been reverted by the EVM")
             ) {
                 throw new Error("Transaction reverted")
+            }
+            if (Date.now() / 1000 > timestamp + 100) {
+                throw new Error("Timeout")
             }
         }
     }
