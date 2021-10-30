@@ -93,8 +93,6 @@ async function start() {
 }
 
 async function rollover(position, timestamp) {
-    const gasPrice = await web3.eth.getGasPrice()
-
     logger.info(
         `Trying to rollover elevation ${position}, timestamp: ${
             Date.now() / 1000
@@ -103,6 +101,8 @@ async function rollover(position, timestamp) {
 
     while (true) {
         try {
+            const gasPrice = await web3.eth.getGasPrice()
+
             // Estime gas required for rollover
             const gasAmount = await rolloverContract.methods
                 .rollover(position)
