@@ -57,7 +57,9 @@ async function start() {
             // Sleep until 250 seconds before the rollover
             if (roundEndTimestamp - timestamp > 500) {
                 logger.info("Sleeping")
-                await sleep((roundEndTimestamp - timestamp - 250) * 1000)
+                await Promise.delay(
+                    (roundEndTimestamp - timestamp - 250) * 1000
+                )
                 continue
             }
 
