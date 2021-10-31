@@ -14,10 +14,15 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY
 const SUMMIT = "0x8f9bccb6dd999148da1808ac290f2274b13d7994"
 const WFTM = "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83"
 
+if (!process.argv[2]) {
+    throw new Error("Please specify the rollover position")
+}
+
+const position = parseInt(process.argv[2])
 const web3 = new Web3(PROVIDER_URL)
 const account = web3.eth.accounts.privateKeyToAccount(PRIVATE_KEY)
 const address = account.address
-const logger = pino(`rollover_${Date.now()}.log`)
+const logger = pino(`rollover${position}_${Date.now()}.log`)
 
 // Add our account to the wallet to be able to use contracts
 web3.eth.accounts.wallet.add(account)
@@ -35,25 +40,17 @@ const routerContract = new web3.eth.Contract(
     SPOOKY_ROUTER_ADDRESS
 )
 
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
 async function start() {
-    if (!process.argv[2]) {
-        throw new Error("Please specify the rollover position")
-    }
-
-    const position = parseInt(process.argv[2])
-
     logger.info(`Starting rollover bot for address ${address}`)
 
     while (true) {
         try {
             // Get rollover event timestamp
-            const roundEndTimestamp = await rolloverContract.methods
-                .roundEndTimestamp(position)
-                .call()
+            const roundEndTimestamp = parseInt(
+                await rolloverContract.methods
+                    .roundEndTimestamp(position)
+                    .call()
+            )
 
             const timestamp = Date.now() / 1000
 
@@ -71,28 +68,22 @@ async function start() {
             )
 
             // Execute the rollover and claim the rewards
-            const receipt = await rollover(position, roundEndTimestamp)
+            const receipt = await rollover(roundEndTimestamp)
 
             await waitTransaction(receipt.transactionHash)
 
-            const summitBalance = await summitContract.methods
-                .balanceOf(address)
-                .call()
-
-            logger.info(`Summit balance: ${summitBalance}`)
-
-            await sleep(250000)
+            await Promise.delay(250000)
 
             await swapRewardsForFTM()
 
-            await sleep(250000)
+            await Promise.delay(250000)
         } catch (err) {
             logger.error(err.message)
         }
     }
 }
 
-async function rollover(position, timestamp) {
+async function rollover(timestamp) {
     logger.info(
         `Trying to rollover elevation ${position}, timestamp: ${
             Date.now() / 1000
@@ -103,7 +94,6 @@ async function rollover(position, timestamp) {
         try {
             const gasPrice = await web3.eth.getGasPrice()
 
-            // Estime gas required for rollover
             const gasAmount = await rolloverContract.methods
                 .rollover(position)
                 .estimateGas({ from: address, gas: 10000000 })
@@ -122,17 +112,14 @@ async function rollover(position, timestamp) {
 
             return receipt
         } catch (err) {
-            const now = Date.now() / 1000
-            logger.info(
-                `${err.message}, machine timestamp: ${now}, round timestamp: ${timestamp}`
-            )
+            logger.error(err.message)
             if (
                 err.message.includes("Transaction has been reverted by the EVM")
             ) {
                 throw new Error("Transaction reverted")
             }
 
-            if (now > timestamp + 100) {
+            if (Date.now() / 1000 > timestamp + 100) {
                 throw new Error("Timeout")
             }
         }
