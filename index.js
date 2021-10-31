@@ -40,6 +40,10 @@ const routerContract = new web3.eth.Contract(
     SPOOKY_ROUTER_ADDRESS
 )
 
+async function sleep(ms) {
+    await new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 async function start() {
     logger.info(`Starting rollover bot for address ${address}`)
 
@@ -57,9 +61,7 @@ async function start() {
             // Sleep until 250 seconds before the rollover
             if (roundEndTimestamp - timestamp > 500) {
                 logger.info("Sleeping")
-                await Promise.delay(
-                    (roundEndTimestamp - timestamp - 250) * 1000
-                )
+                await sleep((roundEndTimestamp - timestamp - 250) * 1000)
                 continue
             }
 
@@ -74,11 +76,11 @@ async function start() {
 
             await waitTransaction(receipt.transactionHash)
 
-            await Promise.delay(250000)
+            await sleep(250000)
 
             await swapRewardsForFTM()
 
-            await Promise.delay(250000)
+            await sleep(250000)
         } catch (err) {
             logger.error(err.message)
         }
@@ -177,7 +179,7 @@ async function waitTransaction(txHash, interval) {
     while (true) {
         const receipt = await web3.eth.getTransactionReceipt(txHash)
         if (receipt != null) return receipt
-        await Promise.delay(interval ? interval : 500)
+        await sleep(interval ? interval : 500)
     }
 }
 
