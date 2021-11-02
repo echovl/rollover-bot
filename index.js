@@ -107,7 +107,7 @@ async function rollover(timestamp) {
                 .send({
                     from: address,
                     gasPrice: (gasPrice * 1.05).toString(),
-                    gas: Math.round(gasAmount * 1.5),
+                    gas: Math.round(gasAmount * 1.1),
                 })
 
             logger.info(
